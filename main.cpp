@@ -1,5 +1,8 @@
 #include <cstdio>
-#include "libs/chesto/src/RootDisplay.hpp"
+#include "chestoincludes.h"
+
+bool running = true;
+void quit(){running=false;}
 
 int main(int argc, char* argv[])
 {
@@ -8,24 +11,34 @@ int main(int argc, char* argv[])
 	InputEvents* events = new InputEvents(); // the main input handler
   printf("done.\n");
 
-	bool running = true;
+
   long frames=0;
+
+  ProgressBar* pbar = new ProgressBar();
+  pbar->position(401, 480);
+  display->elements.push_back(pbar);
+
+  TextElement* title = new TextElement("Hi there!", 36);
+  title->position(410, 460);
+  display->elements.push_back(title);
+
+  Button* exitButton = new Button("Exit", B_BUTTON);
+  exitButton->position(0,0);
+  display->elements.push_back(exitButton);
+  exitButton->action = std::bind(quit);
 
 	while (running)
 	{
 		bool atLeastOneNewEvent = false;
-    TextElement* title = new TextElement("Hi there!", 36);
-    //display->elements.push_back(title);
-    //display->elements.append(title);
 		// get any new input events
 		while (events->update())
 		{
 			// process the inputs of the supplied event
-			printf("New input event, d'oh!\n");
-      if (events->pressed(B_BUTTON)) return 0;
+      //if (events->pressed(B_BUTTON)) return 0;
       display->process(events);
 			atLeastOneNewEvent = true;
-
+      if (events->pressed(A_BUTTON)) pbar->percent = fmod((pbar->percent+0.01), 1);
+      printf("New input event, d'oh! %f \%\n", pbar->percent);
 		}
 
 		// one more event update if nothing changed or there were no previous events seen

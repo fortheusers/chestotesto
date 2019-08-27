@@ -1,12 +1,13 @@
 CHESTO :=	libs/chesto/src
+CHESTOSRC = $(CHESTO)/$(wildcard *.cpp)
 CXX=g++
 CXXFLAGS=-g -std=gnu++14 -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf -lSDL2_gfx -I /usr/local/include -fstack-protector-all -lcurl -DPC
 
 %.o: %.cpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
-chestotesto: $(CHESTO)/$(wildcard *.o) main.o
-	$(CXX) -o chestotesto main.o $(CHESTO)/*.o
+chestotesto: main.o $(CHESTOOBJS)
+	$(CXX) -o chestotesto main.o $(CHESTOOBJS)
 
 
 
