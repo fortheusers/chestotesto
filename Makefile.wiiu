@@ -1,8 +1,3 @@
-GET		:= ./libs/get/src
-RAPIDJSON	:= ./libs/get/src/libs/rapidjson/include
-MINIZIP         := ./libs/get/src/libs/minizip
-TINYXML 	:= ./libs/get/src/libs/tinyxml
-
 #-------------------------------------------------------------------------------
 .SUFFIXES:
 #-------------------------------------------------------------------------------
@@ -21,10 +16,10 @@ include $(DEVKITPRO)/wut/share/wut_rules
 # INCLUDES is a list of directories containing header files
 # ROMFS is a folder to generate app's romfs
 #-------------------------------------------------------------------------------
-TARGET		:=	appstore
+TARGET		:=	chestotesto
 BUILD		:=	build
-SOURCES		:=	. $(GET) $(MINIZIP) $(TINYXML) console gui
-INCLUDES	:=	. $(RAPIDJSON) $(MINIZIP) $(TINYXML)
+SOURCES		:=	. console gui libs/chesto/src
+INCLUDES	:=	. libs/chesto/src
 ROMFS		:=	romfs
 
 #-------------------------------------------------------------------------------
