@@ -1,5 +1,5 @@
 #include <cstdio>
-#include "chestoincludes.h"
+#include "chestoincludes.hpp"
 
 bool running = true;
 void quit(){running=false;}
@@ -36,10 +36,12 @@ int main(int argc, char* argv[])
   display->elements.push_back(dumbButton);
   dumbButton->action = std::bind(printf, "Why on *earth* would you press the dumb button?\n");
 
+  hsv backgroundColor = {0, .55, .45};
+
   /*Main loop.*/
 	while (running)
 	{
-		bool atLeastOneNewEvent = false;
+    bool atLeastOneNewEvent = false;
 		while (events->update()) // get any new input events
 		{
       display->process(events); // process the inputs of the supplied event
@@ -51,6 +53,8 @@ int main(int argc, char* argv[])
     // This is imported from HBAS, wonder if it's even necessary?
 		if (!atLeastOneNewEvent) events->update();
 
+    backgroundColor.h=fmod(backgroundColor.h+0.2, 360);
+    display->backgroundColor=hsv2rgb(backgroundColor);
 		display->render(NULL); //Render all the things.
 		//HBAS has a framelimiter here to avoid redrawing frames if there's no new input (or above 60fps).
     //This currently requires direct SDL2 calls for timing, though.
