@@ -106,9 +106,7 @@ int main(int argc, char* argv[])
       if(logo->x <= 0 || logo->x+logo->width >= 1280) vx*=-.99;
     }
 
-		display->render(NULL); //Render all the things.
-		//HBAS has a framelimiter here to avoid redrawing frames if there's no new input (or above 60fps).
-    //This currently requires direct SDL2 calls for timing, though.
+		display->render(NULL); //Render all the things. Also delays until end of frame.
 	}
 
   /*If you need any de-init code, do it here.*/
