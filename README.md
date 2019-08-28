@@ -20,7 +20,18 @@ Chesto things not yet implemented:
 ### Technical lowdown:
 *(This text is also in the bottom scroller.)*
 
-Technical lowdown v\<ChestoTesto version\>: All the text pieces (including this scroller) are TextElements. This scroller is also an annoyingly wide TextElement - too large to be contained in a single texture, so it's stored as a giant surface and there's some funky on-the-fly cropping instead going on. If you're reading this, then text rendering, font loading, and large surfaces all work! The buttons are...well, Buttons; you can test InputEvents by interacting with them. Pressing (A) should also let you test the ProgressBar in the center of the screen. The spinning check mark is an ImageElement with a brand-new Chesto feature...rotation! Background colors are just a constant HSV fade modifying the RootDisplay every loop. That's about it! This is kinda demosceney, so greetings to: vgmoose, rw, quarky, crc32, pwsincd, Whovian9369, and the rest of 4TU staff and community, plus satelliteseeker, lft, and probably somebody I'm forgetting. This is CompuCat signing off. ~~
+Technical lowdown v0.0.1:
+  All the text pieces (including this scroller) are TextElements.
+  This scroller is also an annoyingly wide TextElement - too large to be contained in a single texture, so it's stored as a giant surface and there's some funky on-the-fly cropping instead going on. If you're reading this, then text rendering, font loading, and large surfaces all work!
+  The buttons are...well, Buttons; you can test InputEvents by interacting with them.
+  Pressing (A) should also let you test the ProgressBar in the center of the screen.
+  The spinning check mark is an ImageElement with a brand-new Chesto feature...rotation!
+  Background colors are just a constant HSV fade modifying the RootDisplay every loop.
+  That's about it!
+
+  This is kinda demosceney, so greetings to: vgmoose, rw, quarky, crc32, pwsincd, Whovian9369, and the rest of 4TU staff and community, plus satelliteseeker, lft, and probably somebody I'm forgetting.
+
+  This is CompuCat signing off. ~~
 
 #### Building for PC
 ```

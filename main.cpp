@@ -4,9 +4,10 @@
 
 bool running = true;
 int scrollspeed = 1;
+bool physicsOn = false;
 void quit(){running=false;}
 void incPercent(ProgressBar* pbar) {pbar->percent = fmod((pbar->percent+0.01), 1);}
-void dumbButtonFunc() {printf("Why on *earth* would you press the dumb button?\n"); scrollspeed=-scrollspeed;}
+void dumbButtonFunc() {printf("Why on *earth* would you press the dumb button?\n"); scrollspeed=-scrollspeed; physicsOn=true;}
 
 int main(int argc, char* argv[])
 {
@@ -62,6 +63,11 @@ int main(int argc, char* argv[])
 
   hsv backgroundColor = {0, .55, .45};
 
+  //Physics constants.
+  float vx = 3;
+  float vy = 4;
+
+
   /*Main loop.*/
 	while (running)
 	{
@@ -86,13 +92,23 @@ int main(int argc, char* argv[])
     logo->angle=backgroundColor.h;
     display->backgroundColor=hsv2rgb(backgroundColor);
 
+    //Scroller logic.
+    lowdown->position((lowdown->x)-scrollspeed, lowdown->y);
+    if(lowdown->x+lowdown->width<0 && scrollspeed >= 0) lowdown->position(1280,720-lowdown->height); //Wraparound the scroller.
+    if(lowdown->x>1280 && scrollspeed < 0) lowdown->position(-lowdown->width,720-lowdown->height);
+
+    //Bouncing physics.
+    if(physicsOn)
+    {
+      logo->position(logo->x+vx, logo->y+(int)vy);
+      vy+=0.25;
+      if(logo->y+logo->height>=lowdown->y) vy*=-0.97;
+      if(logo->x <= 0 || logo->x+logo->width >= 1280) vx*=-.99;
+    }
+
 		display->render(NULL); //Render all the things.
 		//HBAS has a framelimiter here to avoid redrawing frames if there's no new input (or above 60fps).
     //This currently requires direct SDL2 calls for timing, though.
-    lowdown->position((lowdown->x)-scrollspeed, lowdown->y);
-
-    if(lowdown->x+lowdown->width<0 && scrollspeed >= 0) lowdown->position(1280,720-lowdown->height); //Wraparound the scroller.
-    if(lowdown->x>1280 && scrollspeed < 0) lowdown->position(-lowdown->width,720-lowdown->height);
 	}
 
   /*If you need any de-init code, do it here.*/
