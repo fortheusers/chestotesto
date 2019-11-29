@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
   pbar->position(640-(pbar->width/2), 360);
   display->elements.push_back(pbar);
 
-  ImageElement* logo = new ImageElement(ROMFS "res/LOCAL.png");
+  ImageElement* logo = new ImageElement(RAMFS "res/LOCAL.png");
   logo->resize(50, 50);
   logo->position(640-(logo->width/2), title->y-5-logo->height);
   display->elements.push_back(logo);
