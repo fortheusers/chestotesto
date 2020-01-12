@@ -1,6 +1,6 @@
 CHESTO :=	libs/chesto/src
 CXX=g++
-CXXFLAGS=-g -std=gnu++14 -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf -lSDL2_gfx -I /usr/local/include -fstack-protector-all -DPC
+CXXFLAGS=-g -std=gnu++14 -lSDL -lSDLmain -lSDL_image -lSDL_ttf -lSDL_gfx -I /usr/local/include -fstack-protector-all -DPC -DSDL1
 chestotesto: *.cpp
 	$(CXX) -o chestotesto.bin *.cpp $(CHESTO)/*.cpp $(CXXFLAGS)
 
