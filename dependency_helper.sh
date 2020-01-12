@@ -30,7 +30,7 @@ case "${PLATFORM}" in
   pc)
       install_intel_deps
     ;;
-  pc.sdl1)
+  pc-sdl1)
       sudo apt-get -y install wget git libsdl-dev libsdl-ttf-dev libsdl-image-dev libsdl-gfx-dev zlib1g-dev gcc g++ libcurl4-openssl-dev
     ;;
   switch)   # currently libnx
