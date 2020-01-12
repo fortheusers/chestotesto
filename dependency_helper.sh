@@ -31,7 +31,7 @@ case "${PLATFORM}" in
       install_intel_deps
     ;;
   pc-sdl1)
-      sudo apt-get -y install wget git libsdl-dev libsdl-ttf-dev libsdl-image-dev libsdl-gfx-dev zlib1g-dev gcc g++ libcurl4-openssl-dev
+      sudo apt-get -y install wget git libsdl1.2-dev libsdl-ttf2.0-dev libsdl-image1.2-dev libsdl-gfx1.2-dev zlib1g-dev gcc g++ libcurl4-openssl-dev
     ;;
   switch)   # currently libnx
       setup_dkp_repo
