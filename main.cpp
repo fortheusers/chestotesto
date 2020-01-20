@@ -2,7 +2,11 @@
 #include "chestoincludes.hpp"
 #include "main.hpp"
 
+#ifdef _3DS
+#define SCREEN_W 400
+#else
 #define SCREEN_W 640
+#endif
 #define SCREEN_H 480
 
 bool running = true;
