@@ -8,9 +8,10 @@
 .SECONDARY:
 #---------------------------------------------------------------------------------
 
-ifeq ($(strip $(DEVKITPPC)),)
-$(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
-endif
+DEVKITPRO ?= /opt/devkitpro
+DEVKITPPC ?= $(DEVKITPRO)/devkitPPC
+export DEVKITPRO
+export DEVKITPPC
 
 include $(DEVKITPPC)/wii_rules
 
