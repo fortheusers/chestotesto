@@ -41,6 +41,10 @@ case "${PLATFORM}" in
       setup_dkp_repo
       sudo dkp-pacman --noconfirm -S devkitARM 3ds-sdl 3ds-sdl_image 3ds-sdl_mixer 3ds-sdl_gfx 3ds-sdl_ttf libctru citro3d 3dstools 3ds-curl 3ds-mbedtls
     ;;
+  wii)
+      setup_dkp_repo
+      sudo dkp-pacman --noconfirm -S devkitPPC libogc ppc-zlib ppc-bzip2 ppc-freetype ppc-mpg123 ppc-libpng ppc-pkg-config ppc-libvorbisidec ppc-libjpeg-turbo libfat-ogc
+    ;;
   wiiu)   # uses wut
       setup_dkp_repo
 
