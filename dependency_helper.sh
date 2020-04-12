@@ -44,6 +44,13 @@ case "${PLATFORM}" in
   wii)
       setup_dkp_repo
       sudo dkp-pacman --noconfirm -S devkitPPC libogc ppc-zlib ppc-bzip2 ppc-freetype ppc-mpg123 ppc-libpng ppc-pkg-config ppc-libvorbisidec ppc-libjpeg-turbo libfat-ogc
+
+      # one day replace with pacman: https://github.com/dborth/sdl-wii/issues/54
+      sudo apt-get -y install wget git
+      git clone https://gitlab.com/4TU/sdl-wii.git
+      export DEVKITPRO=/opt/devkitpro
+      export DEVKITPPC=$DEVKITPRO/devkitPPC
+      cd sdl-wii && make && make install
     ;;
   wiiu)   # uses wut
       setup_dkp_repo
