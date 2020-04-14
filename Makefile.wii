@@ -25,13 +25,13 @@ TARGET		:=	chestotesto
 BUILD		:=	build
 SOURCES		:=	. console gui libs/chesto/src libs/chesto/libs/resinfs/source
 INCLUDES	:=	. libs/chesto/src libs/chesto/libs/resinfs/include
-RAMFS_DIR		:=	resin
+RAMFS_DIR		:=	../resin
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS		=	-g -O2 -Wall $(MACHDEP) $(INCLUDE) -DSDL1
+CFLAGS		=	-g -O2 -Wall $(MACHDEP) $(INCLUDE) -DSDL1 -DUSE_RAMFS
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -120,6 +120,16 @@ run:
 
 #---------------------------------------------------------------------------------
 else
+
+#-------------------------------------------------------------------------------
+# romfs
+#-------------------------------------------------------------------------------
+include $(PWD)/libs/chesto/libs/resinfs/share/romfs-wiiu.mk
+CFLAGS		+=	$(ROMFS_CFLAGS)
+CXXFLAGS	+=	$(ROMFS_CFLAGS)
+LIBS		+=	$(ROMFS_LIBS)
+OFILES		+=	$(ROMFS_TARGET)
+#-------------------------------------------------------------------------------
 
 #---------------------------------------------------------------------------------
 # main targets

@@ -2,7 +2,7 @@
 #include "chestoincludes.hpp"
 #include "main.hpp"
 
-#ifdef _3DS
+#ifdef _3DS //TODO: remove this ugly hardcode, breaks HD platforms
 #define SCREEN_W 400
 #else
 #define SCREEN_W 640
