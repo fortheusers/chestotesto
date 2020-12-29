@@ -5,7 +5,7 @@ variables:
 
 .common: &common
   script:
-    - make -f Makefile.$PLATFORM
+    - make $PLATFORM
   artifacts:
     paths:
       - chestotesto.$EXT
