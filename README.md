@@ -1,14 +1,30 @@
 # ChestoTesto
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT) [![discord](https://img.shields.io/discord/339118412414582786.svg?color=blueviolet&label=discord&style=flat-square)](https://discordapp.com/invite/F2PKpEj)
 
-Just a little barebones app written by [CompuCat](https://compucat.me) to test [Chesto](https://gitlab.com/4TU/chesto), the GUI library behind the Homebrew App Store. Targeting PC at first, but the eventual goal is to make this a test app to:
+Just a little barebones app written by [CompuCat](https://compucat.me) to test [Chesto](https://github.com/fortheusers/chesto), the GUI library behind the Homebrew App Store. Targeting PC at first, but the eventual goal is to make this a test app to:
 - Validate any Chesto platform
 - Test new Chesto features
 - Serve as an example "How to build for Chesto" app.
 
+Modified by [vgmoose](https://vgmoose.dev) to newer Chesto APIs and syntax.
+
+Features demonstrated:
+- TextElements
+- Buttons
+- ProgressBar
+- ImageElement (including rotation)
+- NetImageElement (fetches an image from the internet, with a local fallback)
+- Background color fading
+- Constraint system for positioning
+- How input processing works
+- Basic Screen structure
+
 Chesto things not yet implemented:
-- DownloadQueue
 - ListElement
+- Containers
+- Keyboard/text input
+- Dropdowns
+- Animations
 - Music
 
 ### Controls
@@ -18,6 +34,13 @@ Chesto things not yet implemented:
 - Pressing (X) does the same thing as pressing the dumb button...and why on *earth* would you press the dumb button?
 
 ### Technical lowdown:
+v0.0.3:
+  The logo at the top is a NetImageElement, which fetches an image from the internet and displays it. If the download fails, it falls back to a local image
+  Code has been updated for the newer Chesto API, which uses smart pointers, lambdas, and constraints
+
+v0.0.2:
+  Updated for RootDisplay changes, and to use the new Chesto Makefile system
+
 *(This text is also in the bottom scroller.)*
 
 Technical lowdown v0.0.1:

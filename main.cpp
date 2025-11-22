@@ -2,102 +2,58 @@
 #include "chestoincludes.hpp"
 #include "main.hpp"
 
-#ifdef _3DS //TODO: remove this ugly hardcode, breaks HD platforms
-#define SCREEN_W 400
-#else
-#define SCREEN_W 640
-#endif
-#define SCREEN_H 480
+using namespace std;
+using namespace Chesto;
 
-bool running = true;
-int scrollspeed = 1;
-bool physicsOn = false;
-void quit(){running=false;}
-void incPercent(ProgressBar* pbar) {pbar->percent = fmod((pbar->percent+0.01), 1);}
-void dumbButtonFunc() {printf("Why on *earth* would you press the dumb button?\n"); scrollspeed=-scrollspeed; physicsOn=true;}
-
-int main(int argc, char* argv[])
+// A Chesto Screen implements three methods: process, render, and rebuildUI
+class MainScreen : public Chesto::Screen
 {
-  printf("ChestoTesto! Now initializing...");
-  RootDisplay* display = new RootDisplay();
-	InputEvents* events = new InputEvents(); // the main input handler
-  printf("done.\n");
-
-  /*Instantiate on-screen elements.*/
-  TextElement* title = new TextElement("Welcome to ChestoTesto!", 48);
-  title->position((SCREEN_W/2)-(title->width/2), (SCREEN_H/3));
-  display->elements.push_back(title);
-
-  Button* exitButton = new Button("Exit", B_BUTTON);
-  exitButton->position(SCREEN_W-(exitButton->width),0);
-  display->elements.push_back(exitButton);
-  exitButton->action = std::bind(quit);
-
-  ProgressBar* pbar = new ProgressBar();
-  pbar->position((SCREEN_W/2)-(pbar->width/2), (SCREEN_H/2));
-  display->elements.push_back(pbar);
-
-  ImageElement* logo = new ImageElement(RAMFS "res/LOCAL.png");
-  logo->resize(SCREEN_H/14.4, SCREEN_H/14.4);
-  logo->position((SCREEN_W/2)-(logo->width/2), title->y-5-logo->height);
-  display->elements.push_back(logo);
-
-  Button* progressButton = new Button("Progress!", A_BUTTON);
-  progressButton->position((SCREEN_W/2)-(progressButton->width/2), pbar->y+10+pbar->height);
-  display->elements.push_back(progressButton);
-  progressButton->action = std::bind(incPercent, pbar);
-
-  Button* dumbButton = new Button("Don't press me, I'm a dumb button", X_BUTTON);
-  dumbButton->position((SCREEN_W/2)-(dumbButton->width/2),progressButton->y+progressButton->height+10);
-  display->elements.push_back(dumbButton);
-  dumbButton->action = std::bind(dumbButtonFunc);
-
-  ListElement* list = new ListElement();
-  list->position(0, 0);
-  display->elements.push_back(list);
-
-  std::string ldt (std::string("Technical lowdown v") + version + std::string(": ") + lowdownText);
-  TextElement* lowdown = new TextElement(ldt.c_str(), 35);
-  lowdown->position(SCREEN_W,SCREEN_H-lowdown->height);
-  display->elements.push_back(lowdown);
-
-  /*Button* buttons[10];
-  for(int i=0; i<10; i++)
-  {
-    buttons[i]=new Button("HAI", 0);
-    display->elements.push_back(buttons[i]);
-  }*/
+public:
+  // Stateful variables can go here, which either persist or get reconstructed, depending on your app's lifecycle
+  int scrollspeed = 1;
+  bool physicsOn = false;
 
   hsv backgroundColor = {0, .55, .45};
-
+  
   //Physics constants.
   float vx = 3;
   float vy = 4;
 
+  // raw pointer references to allow us to manipulate them without rebuilding
+  NetImageElement* logo;
+  TextElement* lowdown;
 
-  /*Main loop.*/
-	while (running)
-	{
-    bool atLeastOneNewEvent = false;
-		while (events->update()) // get any new input events
-		{
-      display->process(events); // process the inputs of the supplied event
-      if(events->pressed(UP_BUTTON) || events->pressed(START_BUTTON)) scrollspeed++;
-      if(events->pressed(DOWN_BUTTON) || events->pressed(SELECT_BUTTON)) scrollspeed--;
-			atLeastOneNewEvent = true;
-		}
+  MainScreen() {
+    super();
+    this->rebuildUI();
+    this->hasBackground = true;
+  }
 
-		// one more event update if nothing changed or there were no previous events seen
-		// needed to non-input related processing that might update the screen to take place
-    // This is imported from HBAS, wonder if it's even necessary?
-		if (!atLeastOneNewEvent) events->update();
+  void incPercent(ProgressBar* pbar) {
+    pbar->percent = fmod((pbar->percent+0.01), 1);
+  }
+  void dumbButtonFunc() {
+    printf("Why on *earth* would you press the dumb button?\n");
+    scrollspeed=-scrollspeed;
+    physicsOn=true;
+
+    //clear constraints on the image logo, else it won't be able to move
+    logo->constraints.clear();
+  }
+
+  bool process(Chesto::InputEvents* events) override {
+    // Process input events here
+    if(events->pressed(UP_BUTTON) || events->pressed(START_BUTTON)) scrollspeed++;
+    if(events->pressed(DOWN_BUTTON) || events->pressed(SELECT_BUTTON)) scrollspeed--;
 
     //Fade background hue and spin the logo. Deliberately not using modulo here to avoid negative direction issues.
     backgroundColor.h+=(float)scrollspeed*2/10;
     if(backgroundColor.h>=(SCREEN_H/2)) backgroundColor.h=0;
     if(backgroundColor.h<0) backgroundColor.h=(SCREEN_H/2);
     logo->angle=backgroundColor.h;
-    display->backgroundColor=hsv2rgb(backgroundColor);
+
+    // update our bg color on the actual view with our local variable
+    ((Element*)this)->backgroundColor=hsv2rgb(backgroundColor);
 
     //Scroller logic.
     lowdown->position((lowdown->x)-scrollspeed, lowdown->y);
@@ -112,10 +68,75 @@ int main(int argc, char* argv[])
       if(logo->y+logo->height>=lowdown->y) vy*=-0.97;
       if(logo->x <= 0 || logo->x+logo->width >= SCREEN_W) vx*=-.99;
     }
+  
+    // bubble up for any lifecycle events
+    // returning false here means that render is not called
+    return Chesto::Screen::process(events) || true; // for chestotesto, we always render (bg changes, lowdown scrolls)
+  }
 
-		display->render(NULL); //Render all the things. Also delays until end of frame.
-	}
+  void render(Element* parent) override {
+    // Render additional non-Element UI here, like rectangles or other raw graphics
+    // or override this to control the order in which Elements render, if it needs to be customized beyond using the rendering tree
+    Chesto::Screen::render(parent);
+  }
 
-  /*If you need any de-init code, do it here.*/
-	return 0;
+  void rebuildUI() override {
+    /*Instantiate on-screen elements.*/
+    auto title = createChild<TextElement>("Welcome to ChestoTesto!", 48)
+      ->constrain(ALIGN_CENTER_HORIZONTAL)
+      ->constrain(ALIGN_TOP, SCREEN_H/3);
+
+    createChild<Button>("Exit", B_BUTTON)
+      ->constrain(ALIGN_TOP | ALIGN_RIGHT, 10)
+      ->setAction([] { RootDisplay::mainDisplay->requestQuit(); });
+
+    auto pbar = createChild<ProgressBar>();
+    pbar->constrain(ALIGN_CENTER_HORIZONTAL)
+      ->constrainToTarget(title, ALIGN_BOTTOM, 0);
+
+    // TODO: Use a vertical Container for all these elements, instead of manual constraints
+
+    auto url = "https://github.com/fortheusers/chesto/raw/main/logo.png";
+    logo = createChild<NetImageElement>(url, []() -> Texture* {
+        return new ImageElement(RAMFS "res/LOCAL.png");
+    }, true);
+    logo->constrain(ALIGN_CENTER_HORIZONTAL)
+      ->constrainToTarget(title, ALIGN_TOP, 5); // align 5px above title
+    logo->setSize(SCREEN_H/14.4, SCREEN_H/14.4);
+
+    auto progressButton = createChild<Button>("Progress!", A_BUTTON)
+      ->constrain(ALIGN_CENTER_HORIZONTAL)
+      ->constrainToTarget(pbar, ALIGN_BOTTOM, 70)
+      ->setAction([this, pbar] { incPercent(pbar); });
+
+    createChild<Button>("Don't press me, I'm a dumb button", X_BUTTON)
+      ->constrain(ALIGN_CENTER_HORIZONTAL)
+      ->constrainToTarget(progressButton, ALIGN_BOTTOM, 15)
+      ->setAction([this] { dumbButtonFunc(); });
+
+    auto list = createChild<ListElement>()
+      ->setPosition(0, 0);
+
+    std::string ldt (std::string("Technical lowdown v") + version + std::string(": ") + lowdownText);
+    lowdown = createChild<TextElement>(ldt.c_str(), 35);
+    lowdown->constrain(ALIGN_BOTTOM)
+      ->setPosition(SCREEN_W, 0); // start offscreen to the right
+  }
+
+  ~MainScreen() {
+    /*If you need any de-init code, do it here.*/
+  }
+};
+
+// actual entry point
+int main(int argc, char* argv[])
+{
+  printf("ChestoTesto! Now initializing...\n");
+  auto display = make_unique<RootDisplay>();
+
+  // display our main screen
+  display->pushScreen(make_unique<MainScreen>());
+
+  // event loop logic is handled by RootDisplay
+  return display->mainLoop();
 }
