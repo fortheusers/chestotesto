@@ -114,8 +114,8 @@ public:
       ->constrainToTarget(progressButton, ALIGN_BOTTOM, 15)
       ->setAction([this] { dumbButtonFunc(); });
 
-    auto list = createChild<ListElement>()
-      ->setPosition(0, 0);
+    // auto list = createChild<ListElement>()
+    //   ->setPosition(0, 0);
 
     std::string ldt (std::string("Technical lowdown v") + version + std::string(": ") + lowdownText);
     lowdown = createChild<TextElement>(ldt.c_str(), 35);
@@ -129,7 +129,7 @@ public:
 };
 
 // actual entry point
-int main(int argc, char* argv[])
+int main(int, char**)
 {
   printf("ChestoTesto! Now initializing...\n");
   auto display = make_unique<RootDisplay>();
