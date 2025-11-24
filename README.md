@@ -18,12 +18,12 @@ Features demonstrated:
 - Constraint system for positioning
 - How input processing works
 - Basic Screen structure
+- Dropdowns
 
 Chesto things not yet implemented:
 - ListElement
 - Containers
 - Keyboard/text input
-- Dropdowns
 - Animations
 - Music
 

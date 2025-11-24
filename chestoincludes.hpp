@@ -7,6 +7,7 @@
 #include "libs/chesto/src/Constraint.hpp"
 #include "libs/chesto/src/Screen.hpp"
 #include "libs/chesto/src/InputEvents.hpp"
+#include "libs/chesto/src/DropDown.hpp"
 
 #define SCREEN_W SCREEN_WIDTH
 #define SCREEN_H SCREEN_HEIGHT

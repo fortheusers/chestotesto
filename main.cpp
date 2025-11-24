@@ -19,6 +19,9 @@ public:
   float vx = 3;
   float vy = 4;
 
+  // if true, we won't change anything in process
+  bool paused = false;
+
   // raw pointer references to allow us to manipulate them without rebuilding
   NetImageElement* logo;
   TextElement* lowdown;
@@ -42,36 +45,40 @@ public:
   }
 
   bool process(Chesto::InputEvents* events) override {
-    // Process input events here
-    if(events->pressed(UP_BUTTON) || events->pressed(START_BUTTON)) scrollspeed++;
-    if(events->pressed(DOWN_BUTTON) || events->pressed(SELECT_BUTTON)) scrollspeed--;
+    bool res = false; // should we render after processing? (this is the "sleep" part of chesto, no updates if no changed needed)
+    if (!paused) {
+      // Process input events here
+      if(events->pressed(UP_BUTTON) || events->pressed(START_BUTTON)) scrollspeed++;
+      if(events->pressed(DOWN_BUTTON) || events->pressed(SELECT_BUTTON)) scrollspeed--;
 
-    //Fade background hue and spin the logo. Deliberately not using modulo here to avoid negative direction issues.
-    backgroundColor.h+=(float)scrollspeed*2/10;
-    if(backgroundColor.h>=(SCREEN_H/2)) backgroundColor.h=0;
-    if(backgroundColor.h<0) backgroundColor.h=(SCREEN_H/2);
-    logo->angle=backgroundColor.h;
+      //Fade background hue and spin the logo. Deliberately not using modulo here to avoid negative direction issues.
+      backgroundColor.h+=(float)scrollspeed*2/10;
+      if(backgroundColor.h>=(SCREEN_H/2)) backgroundColor.h=0;
+      if(backgroundColor.h<0) backgroundColor.h=(SCREEN_H/2);
+      logo->angle=backgroundColor.h;
 
-    // update our bg color on the actual view with our local variable
-    ((Element*)this)->backgroundColor=hsv2rgb(backgroundColor);
+      // update our bg color on the actual view with our local variable
+      ((Element*)this)->backgroundColor=hsv2rgb(backgroundColor);
 
-    //Scroller logic.
-    lowdown->position((lowdown->x)-scrollspeed, lowdown->y);
-    if(lowdown->x+lowdown->width<0 && scrollspeed >= 0) lowdown->position(SCREEN_W,SCREEN_H-lowdown->height); //Wraparound the scroller.
-    if(lowdown->x>SCREEN_W && scrollspeed < 0) lowdown->position(-lowdown->width,SCREEN_H-lowdown->height);
+      //Scroller logic.
+      lowdown->position((lowdown->x)-scrollspeed, lowdown->y);
+      if(lowdown->x+lowdown->width<0 && scrollspeed >= 0) lowdown->position(SCREEN_W,SCREEN_H-lowdown->height); //Wraparound the scroller.
+      if(lowdown->x>SCREEN_W && scrollspeed < 0) lowdown->position(-lowdown->width,SCREEN_H-lowdown->height);
 
-    //Bouncing physics.
-    if(physicsOn)
-    {
-      logo->position(logo->x+vx, logo->y+(int)vy);
-      vy+=0.25;
-      if(logo->y+logo->height>=lowdown->y) vy*=-0.97;
-      if(logo->x <= 0 || logo->x+logo->width >= SCREEN_W) vx*=-.99;
+      //Bouncing physics.
+      if(physicsOn)
+      {
+        logo->position(logo->x+vx, logo->y+(int)vy);
+        vy+=0.25;
+        if(logo->y+logo->height>=lowdown->y) vy*=-0.97;
+        if(logo->x <= 0 || logo->x+logo->width >= SCREEN_W) vx*=-.99;
+      }
+      res = true; // we made changes, so we need to render
     }
   
     // bubble up for any lifecycle events
     // returning false here means that render is not called
-    return Chesto::Screen::process(events) || true; // for chestotesto, we always render (bg changes, lowdown scrolls)
+    return Chesto::Screen::process(events) || res; // for chestotesto, we always render (bg changes, lowdown scrolls)
   }
 
   void render(Element* parent) override {
@@ -81,44 +88,122 @@ public:
   }
 
   void rebuildUI() override {
-    /*Instantiate on-screen elements.*/
-    auto title = createChild<TextElement>("Welcome to ChestoTesto!", 48)
-      ->constrain(ALIGN_CENTER_HORIZONTAL)
-      ->constrain(ALIGN_TOP, SCREEN_H/3);
+    Chesto::Screen::rebuildUI(); // handles updating dimensions and cleaing old elements
 
-    createChild<Button>("Exit", B_BUTTON)
+    /*Instantiate on-screen elements.*/
+    auto title = createNode<TextElement>("Welcome to ChestoTesto!", 48)
+      ->constrain(ALIGN_CENTER_HORIZONTAL)
+      ->constrain(ALIGN_TOP, SCREEN_H/3.2);
+
+    createNode<Button>("Exit", B_BUTTON)
       ->constrain(ALIGN_TOP | ALIGN_RIGHT, 10)
       ->setAction([] { RootDisplay::mainDisplay->requestQuit(); });
 
-    auto pbar = createChild<ProgressBar>();
+    auto pbar = createNode<ProgressBar>();
     pbar->constrain(ALIGN_CENTER_HORIZONTAL)
       ->constrainToTarget(title, ALIGN_BOTTOM, 0);
 
     // TODO: Use a vertical Container for all these elements, instead of manual constraints
 
     auto url = "https://github.com/fortheusers/chesto/raw/main/logo.png";
-    logo = createChild<NetImageElement>(url, []() -> Texture* {
+    logo = createNode<NetImageElement>(url, []() -> Texture* {
         return new ImageElement(RAMFS "res/LOCAL.png");
     }, true);
-    logo->constrain(ALIGN_CENTER_HORIZONTAL)
-      ->constrainToTarget(title, ALIGN_TOP, 5); // align 5px above title
+    if (!physicsOn) {
+      // only constrain if physics isn't on (it may be on during rebuilds)
+      logo->constrain(ALIGN_CENTER_HORIZONTAL)
+        ->constrainToTarget(title, ALIGN_TOP, 5); // align 5px above title
+    }
     logo->setSize(SCREEN_H/14.4, SCREEN_H/14.4);
 
-    auto progressButton = createChild<Button>("Progress!", A_BUTTON)
+    auto progressButton = createNode<Button>("Progress!", A_BUTTON)
       ->constrain(ALIGN_CENTER_HORIZONTAL)
       ->constrainToTarget(pbar, ALIGN_BOTTOM, 70)
       ->setAction([this, pbar] { incPercent(pbar); });
 
-    createChild<Button>("Don't press me, I'm a dumb button", X_BUTTON)
+    auto dumbButton = createNode<Button>("Don't press me, I'm a dumb button", X_BUTTON)
       ->constrain(ALIGN_CENTER_HORIZONTAL)
       ->constrainToTarget(progressButton, ALIGN_BOTTOM, 15)
       ->setAction([this] { dumbButtonFunc(); });
 
-    // auto list = createChild<ListElement>()
+    auto pauseButton = createNode<Button>(paused ? "UNPAUSE!" : "PAUSE!", Y_BUTTON);
+    pauseButton->constrain(ALIGN_CENTER_HORIZONTAL)
+      ->constrainToTarget(dumbButton, ALIGN_BOTTOM, 15)
+      ->setAction([this, pauseButton] {
+        paused = !paused;
+        // change button text!
+        pauseButton->updateText(paused ? "UNPAUSE!" : "PAUSE!");
+      });
+
+      // Resolution selector
+    auto resChoices = std::vector<std::pair<std::string, std::string>>{
+        {"800x600", "800x600"},
+        {"1024x768", "1024x768"},
+        {"1280x720", "1280x720"},
+        {"1920x1080", "1920x1080"}
+    };
+    // default to the current resolution
+    std::string currentRes = to_string(RootDisplay::screenWidth) + "x" + to_string(RootDisplay::screenHeight);
+    // if it's not in the list, add it!
+    bool foundRes = false;
+    for (auto& choice : resChoices) {
+        if (choice.first == currentRes) {
+            foundRes = true;
+            break;
+        }
+    }
+    if (!foundRes) {
+        resChoices.insert(resChoices.begin(), {currentRes, currentRes});
+    }
+
+    createNode<DropDown>(ZL_BUTTON, resChoices,
+      [](std::string choice){
+          auto dimensions = choice;;
+          size_t xpos = dimensions.find('x');
+          if (xpos != std::string::npos) {
+              int width = std::stoi(dimensions.substr(0, xpos));
+              int height = std::stoi(dimensions.substr(xpos + 1));
+
+              // implicitly will call rebuildUI for all screens
+              RootDisplay::mainDisplay->setScreenResolution(width, height);
+          }
+      },
+      18,             // text size
+      currentRes,      // default choice (value and label)
+      true            // dark mode
+  )
+  ->constrain(ALIGN_TOP | ALIGN_LEFT, 10);
+
+  // dropdown but for adjusting global scale
+  // auto scaleChoices = std::vector<std::pair<std::string, std::string>>{
+  //     {"0.5", "0.5x"},
+  //     {"0.75", "0.75x"},
+  //     {"1.0", "1.0x"},
+  //     {"1.25", "1.25x"},
+  //     {"1.5", "1.5x"},
+  //     {"2.0", "2.0x"}
+  // };
+  // createNode<DropDown>(ZR_BUTTON, scaleChoices,
+  //   [this](std::string choice){
+  //       float scale = std::stof(choice);
+  //       RootDisplay::globalScale = scale;
+  //       // call rebuildUI
+  //       RootDisplay::deferAction([this]() {
+  //           this->rebuildUI();
+  //       });
+  //   },
+  //   18,             // text size
+  //   std::to_string(RootDisplay::globalScale),          // default choice
+  //   true            // dark mode
+  // )
+  // ->constrainToTarget(resDropdown, ALIGN_BOTTOM, 5)
+  // ->constrain(ALIGN_LEFT, 10);
+
+    // auto list = createNode<ListElement>()
     //   ->setPosition(0, 0);
 
     std::string ldt (std::string("Technical lowdown v") + version + std::string(": ") + lowdownText);
-    lowdown = createChild<TextElement>(ldt.c_str(), 35);
+    lowdown = createNode<TextElement>(ldt.c_str(), 35);
     lowdown->constrain(ALIGN_BOTTOM)
       ->setPosition(SCREEN_W, 0); // start offscreen to the right
   }
