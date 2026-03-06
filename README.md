@@ -8,6 +8,8 @@ Just a little barebones app written by [CompuCat](https://compucat.me) to test [
 
 Modified by [vgmoose](https://vgmoose.dev) to newer Chesto APIs and syntax.
 
+[chestotesto.webm](https://github.com/user-attachments/assets/c1e2befa-cb6f-425f-a5e9-bf5c4acd69be)
+
 Features demonstrated:
 - TextElements
 - Buttons
